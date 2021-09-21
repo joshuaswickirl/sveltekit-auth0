@@ -1,4 +1,5 @@
 import { getEnvVars } from "$internal/envVars";
+import cache from "$internal/cache";
 
 const envVars = getEnvVars();
 
@@ -9,14 +10,23 @@ export async function get(request) {
     const callbackCode = request.query.get("code");
     const tokens = await requestTokens(callbackCode);
     console.log("my tokens", tokens)
+
     // validate id_token https://auth0.com/docs/security/tokens/id-tokens/validate-id-tokens
     // validate access_token https://auth0.com/docs/security/tokens/access-tokens/validate-access-tokens
+
+    cache.writeSession(tokens.id_token, tokens)
+
     // const user = await getUser(accessToken);
     // request.locals.user = user.login;
+
+    // const json = JSON.stringify(tokens.id_token);
+    // const value = Buffer.from(json).toString('base64');
+
     return {
         status: 302,
         headers: {
             location: "/",
+            "set-cookie": `jwt=${tokens.id_token}; path=/; HttpOnly`
         },
     };
 }

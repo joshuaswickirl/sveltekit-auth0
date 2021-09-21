@@ -14,6 +14,7 @@
   "dependencies": {
     "@sveltejs/adapter-node": "^1.0.0-next.44",
     "auth0-js": "^9.16.4",
+    "cookie": "^0.4.1",
     "dotenv": "^10.0.0"
   }
 }
