@@ -9,18 +9,13 @@ export async function get(request) {
 
     const callbackCode = request.query.get("code");
     const tokens = await requestTokens(callbackCode);
-    console.log("my tokens", tokens)
 
     // validate id_token https://auth0.com/docs/security/tokens/id-tokens/validate-id-tokens
     // validate access_token https://auth0.com/docs/security/tokens/access-tokens/validate-access-tokens
 
-    cache.writeSession(tokens.id_token, tokens)
+    const userInfo = await getUserInfo(tokens.access_token)
 
-    // const user = await getUser(accessToken);
-    // request.locals.user = user.login;
-
-    // const json = JSON.stringify(tokens.id_token);
-    // const value = Buffer.from(json).toString('base64');
+    cache.writeSession(tokens.id_token, { info: userInfo, tokens: tokens })
 
     return {
         status: 302,
@@ -45,11 +40,11 @@ async function requestTokens(callbackCode) {
     }).then(response => response.json())
 }
 
-// function getUser(token) {
-//     return fetch("https://api.github.com/user", {
-//         headers: {
-//             Accept: "application/json",
-//             Authorization: `Bearer ${token}`,
-//         },
-//     }).then((r) => r.json());
-// }
+function getUserInfo(accessToken) {
+    return fetch(`https://${envVars.AUTH0_DOMAIN}/userinfo`, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+        },
+    }).then((r) => r.json());
+}
