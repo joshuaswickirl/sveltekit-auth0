@@ -11,3 +11,6 @@ export function getEnvVars() {
         AUTH0_CLIENT_SECRET: process.env["AUTH0_CLIENT_SECRET"],
     };
 }
+
+// exposed to client side js with vite
+export const AUTH0_DOMAIN = import.meta.env.VITE_AUTH0_DOMAIN;

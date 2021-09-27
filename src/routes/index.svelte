@@ -10,18 +10,19 @@
 
 <script>
     import { session } from "$app/stores";
+    import { AUTH0_DOMAIN } from "$internal/envVars";
 
     export let userName;
+
+    const auth0LogoutURL = `https://${AUTH0_DOMAIN}/v2/logout?returnTo=http://localhost:3000`;
 
     async function logout() {
         const res = await fetch("auth/logout", {
             method: "POST",
         });
-        console.log(res.status);
         if (res.status !== 200) {
             return;
         }
-
         $session.userName = null;
     }
 </script>
@@ -32,7 +33,10 @@
 </p>
 
 {#if userName}
-    <button on:click={logout}>Logout of app</button>
+    <button on:click={logout}>Logout of app</button> or
+    <a href={auth0LogoutURL}>
+        <button on:click={logout}>Logout of SSO session</button>
+    </a>
 {:else}
     <a href="/auth/login">
         <button>Login</button>
