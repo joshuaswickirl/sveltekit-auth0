@@ -10,11 +10,11 @@
 
 <script>
     import { session } from "$app/stores";
-    import { AUTH0_DOMAIN } from "$internal/envVars";
+    import { APP_URL, AUTH0_DOMAIN } from "$internal/envVars";
 
     export let userName;
 
-    const auth0LogoutURL = `https://${AUTH0_DOMAIN}/v2/logout?returnTo=http://localhost:3000`;
+    const auth0LogoutURL = `https://${AUTH0_DOMAIN}/v2/logout?returnTo=${APP_URL}`;
 
     async function logout() {
         const res = await fetch("auth/logout", {
