@@ -1,4 +1,5 @@
 import { getEnvVars } from "$internal/envVars";
+import { validate } from "$internal/jwt";
 import cache from "$internal/cache";
 
 const envVars = getEnvVars();
@@ -10,7 +11,29 @@ export async function get(request) {
     const callbackCode = request.query.get("code");
     const tokens = await requestTokens(callbackCode);
 
-    // validate id_token https://auth0.com/docs/security/tokens/id-tokens/validate-id-tokens
+    const nonce = "54321"
+    const nonceOk = verifyNonce(tokens.id_token, nonce)
+    if (!nonceOk) {
+        console.log("Nonce failed verification.")
+        return {
+            status: 401,
+            headers: {
+                location: "/"
+            }
+        }
+    }
+
+    const jwtIsValid = await verifyJWT(tokens.id_token, envVars.AUTH0_DOMAIN, envVars.AUTH0_CLIENT_ID, envVars.AUTH0_CURRENT_KEYID)
+    if (!jwtIsValid) {
+        console.log("ID token failed verification.")
+        return {
+            status: 401,
+            headers: {
+                location: "/"
+            }
+        }
+    }
+
     // validate access_token https://auth0.com/docs/security/tokens/access-tokens/validate-access-tokens
 
     const userInfo = await getUserInfo(tokens.access_token)
