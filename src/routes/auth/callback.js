@@ -1,5 +1,5 @@
 import { getEnvVars } from "$internal/envVars";
-import { validate } from "$internal/jwt";
+import { verifyNonce, verifyJWT } from "$internal/jwt";
 import cache from "$internal/cache";
 
 const envVars = getEnvVars();
@@ -33,8 +33,6 @@ export async function get(request) {
             }
         }
     }
-
-    // validate access_token https://auth0.com/docs/security/tokens/access-tokens/validate-access-tokens
 
     const userInfo = await getUserInfo(tokens.access_token)
 
