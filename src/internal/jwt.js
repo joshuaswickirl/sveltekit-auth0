@@ -10,7 +10,11 @@ export function verifyNonce(jwt, nonce) {
         return false
     }
     const jwtObject = jsrsasign.KJUR.jws.JWS.readSafeJSONString(jwtPayload)
-    return jwtObject.nonce === nonce
+
+    // generate hash of nonce
+    const nonceHash = nonce
+
+    return jwtObject.nonce === nonceHash
 }
 
 export async function verifyJWT(jwt, auth0Domain, clientID, currentKeyID) {

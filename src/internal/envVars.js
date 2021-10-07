@@ -1,8 +1,6 @@
 // This is needed until https://github.com/vitejs/vite/issues/3176 is resolved.
 // See https://kit.svelte.dev/faq#env-vars.
-import("dotenv").then((dotenv) => {
-    dotenv.config();
-});
+import("dotenv").then((dotenv) => dotenv.config());
 
 export function getEnvVars() {
     return {
@@ -11,6 +9,8 @@ export function getEnvVars() {
         AUTH0_CLIENT_ID: process.env["AUTH0_CLIENT_ID"],
         AUTH0_CLIENT_SECRET: process.env["AUTH0_CLIENT_SECRET"],
         AUTH0_CURRENT_KEYID: process.env["AUTH0_CURRENT_KEYID"],
+        AUTH0_STATE_COOKIE_NAME: process.env["AUTH0_STATE_COOKIE_NAME"],
+        AUTH0_NONCE_COOKIE_NAME: process.env["AUTH0_NONCE_COOKIE_NAME"]
     };
 }
 

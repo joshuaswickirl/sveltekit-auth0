@@ -1,24 +1,38 @@
 import { getEnvVars } from "$internal/envVars";
 import { verifyNonce, verifyJWT } from "$internal/jwt";
 import cache from "$internal/cache";
+import cookie from "cookie"
 
 const envVars = getEnvVars();
 
 export async function get(request) {
+    const auth0StateCookieName = envVars.AUTH0_STATE_COOKIE_NAME
+    const auth0NonceCookieName = envVars.AUTH0_NONCE_COOKIE_NAME
+
     const state = request.query.get("state")
-    // compare state param to OIDC state store in local memory
+    const cookies = cookie.parse(request.headers.cookie)
+    if (state !== cookies[auth0StateCookieName]) {
+        console.log("state doesnt match", state, cookies[auth0StateCookieName])
+        return {
+            status: 401,
+            headers: {
+                location: "/",
+                'set-cookie': [deleteCookie(auth0StateCookieName), deleteCookie(auth0NonceCookieName)]
+            }
+        }
+    }
 
     const callbackCode = request.query.get("code");
     const tokens = await requestTokens(callbackCode);
 
-    const nonce = "54321"
-    const nonceOk = verifyNonce(tokens.id_token, nonce)
+    const nonceOk = verifyNonce(tokens.id_token, cookies[auth0NonceCookieName])
     if (!nonceOk) {
         console.log("Nonce failed verification.")
         return {
             status: 401,
             headers: {
-                location: "/"
+                location: "/",
+                'set-cookie': [deleteCookie(auth0StateCookieName), deleteCookie(auth0NonceCookieName)]
             }
         }
     }
@@ -29,7 +43,8 @@ export async function get(request) {
         return {
             status: 401,
             headers: {
-                location: "/"
+                location: "/",
+                'set-cookie': [deleteCookie(auth0StateCookieName), deleteCookie(auth0NonceCookieName)]
             }
         }
     }
@@ -42,7 +57,11 @@ export async function get(request) {
         status: 302,
         headers: {
             location: "/",
-            "set-cookie": `jwt=${tokens.id_token}; path=/; HttpOnly`
+            "set-cookie": [
+                `jwt=${tokens.id_token}; path=/; HttpOnly`,
+                deleteCookie(auth0StateCookieName),
+                deleteCookie(auth0NonceCookieName)
+            ],
         },
     };
 }
@@ -68,4 +87,8 @@ function getUserInfo(accessToken) {
             Authorization: `Bearer ${accessToken}`,
         },
     }).then((r) => r.json());
+}
+
+function deleteCookie(cookieName) {
+    return `${cookieName}=deleted; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`
 }
